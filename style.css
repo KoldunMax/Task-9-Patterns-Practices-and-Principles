@@ -1,0 +1,212 @@
+:root {
+	--AccentColorDarken: #242b66;
+	--AccentColor: #0f59d5;
+	--AccentColorLighten: rgb(173,216,230);
+	--PressedButtom: rgb(255,140,0);
+	--TimesButton: rgb(65,105,225);
+}
+
+/* Pop up bedore joined in chat */
+
+#inviteform {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr 1fr 1fr;
+    max-width: 500px;
+    grid-gap: 20px;
+    margin: auto;
+    font-weight: bold;
+    font-size: 20px;
+    font-family: 'century gothic';
+    border: 4px var(--AccentColorDarken) dashed;
+    border-radius: 20px;
+    padding: 50px;
+    box-sizing: border-box;
+    background-color: var(--AccentColorLighten);
+}
+
+#inviteform .inviteInput, 
+#inviteButton {
+    font: inherit;
+    padding: 10px;
+    border: 2px solid black;
+    border-radius: 10px;
+}
+
+#inviteButton {
+    cursor: pointer;
+    background-color: var(--AccentColor);
+    color: white;
+    transition: 1s;
+}
+
+#inviteButton:hover {
+    background-color: var(--AccentColorDarken);
+}
+
+/* Main part of chat */
+
+#main-wrapper-chat {
+    display: none;
+    grid-template-columns: 1fr 2fr;
+    grid-template-rows: auto;
+    max-width: 1200px;
+    margin: auto;
+    padding: 10px;
+}
+
+h3#header-chat-title {
+    grid-column: 1/-1;
+    padding: 15px 10px;
+	background: linear-gradient(180deg, var(--AccentColorDarken), var(--AccentColor));
+    color: white;
+    text-align: center;
+    font-family: 'century gothic';
+    letter-spacing: 1px;
+    font-size: 20px;
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+    margin-bottom: 0;
+}
+
+#aside-wrapper-names {
+    width: 100%;
+    border: 2px solid black;
+    border-bottom: none;
+    font-size: 26px;
+    box-sizing: border-box;
+    overflow-y: auto;
+    max-height: 800px;
+    min-height: 200px;
+}
+
+#aside-wrapper-names .online, 
+#aside-wrapper-names .offline {
+    display: inline-block;
+    height: 20px;
+    width: 20px;
+    margin-right: 15px;
+    border-radius: 20px;
+}
+
+#aside-wrapper-names .online {
+    background-color: greenyellow;
+}
+
+#aside-wrapper-names .offline {
+    background-color: red;
+    opacity: .8;
+}
+
+#aside-wrapper-names ul {
+    list-style-type: none;
+}
+#aside-wrapper-names ul li {
+    margin: 20px 0px;
+}
+
+#aside-wrapper-names .state-time-coming {
+    opacity: .5;
+    font-size: 16px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    margin-left: 10px;
+}
+
+#main-wrapper-messages {
+    padding: 0px 10px;
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+    box-sizing: border-box;
+    border: 2px solid black;
+    border-left: none;
+    border-bottom: none;
+    overflow-y: scroll;
+    max-height: 800px;
+}
+
+#main-wrapper-messages .message-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: .1fr;
+    font-size: 18px;
+    margin: 20px 10px;
+    border: 2px solid black;
+    padding: 0px 20px;
+    max-width: 60%;
+    border-radius: 30px;
+}
+
+#main-wrapper-messages .other-user {
+    justify-content: center;
+}
+
+#feedback {
+    grid-column: 1/-1;
+    justify-self: center;
+}
+
+#main-wrapper-messages .current-user {
+    justify-self: end;
+}
+
+
+#main-wrapper-messages .nick-name-message {
+    justify-self: start;
+}
+
+#main-wrapper-messages .time-sent-message {
+    justify-self: end;
+}
+
+#main-wrapper-messages .message-user-text {
+    grid-column: 1/-1;
+    word-wrap: break-word;
+}
+
+#main-wrapper-messages .message-user-text-regex {
+    background-color: var(--AccentColorLighten);
+}
+
+#main-wrapper-messages .user-writing {
+    opacity: .5;
+    padding-left: 10px;
+    margin: 10px 0px;
+}
+
+#footer-send-message {
+    grid-column: 1/-1;
+    margin: auto;
+    padding: 10px;
+    font-size: 24px;
+    font-family: "century gothic";
+    font-weight: bold;
+    width: 1000px;
+    justify-self: center;
+    box-sizing: border-box;
+}
+
+#text-message-footer,
+#button-message-footer {
+    font: inherit;
+    padding: 15px;
+}
+
+#text-message-footer {
+    width: 80%
+}
+
+#button-message-footer{
+    background-color: var(--AccentColorLighten);
+    border: 1.5px solid black;
+    width: 15%;
+    cursor: pointer;
+    transition: .5s;
+    margin-bottom: 20px;
+    margin-top: 20px;
+}
+
+#button-message-footer:hover {
+    background-color: var(--AccentColor);
+}

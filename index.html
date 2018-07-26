@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Chat</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <base href="/">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="style.css">
+    <script src="/socket.io/socket.io.js" defer></script>
+    <script src="script.js" type="text/javascript" defer></script>
+</head> 
+<body>
+    <div id="inviteform">
+        <input type="text" max-length="10" class="inviteInput" id="inviteName" placeholder="Name" required>
+        <input type="text" class="inviteInput" id="inviteNick" placeholder="NickName" required>
+        <input type="button" value="OK" id="inviteButton">
+    </div>
+
+    <div id="main-wrapper-chat">
+
+        <h3 id="header-chat-title">You successfully joined in chat</h3>
+        
+        <div id="aside-wrapper-names">
+            <ul id="users-name-list">
+            </ul>
+        </div>
+
+        <div id="main-wrapper-messages">
+            
+            <!-- <p class="user-writing"><span class="name-user-typing">@user</span> is typing...</p> -->
+            
+        </div>
+        <label for="main-wrapper-messages" id="feedback"></label>
+
+        <div id="footer-send-message">
+            <input type="text" id="text-message-footer" placeholder="your message">
+            <input type="button" value="Send" id="button-message-footer">
+        </div>
+
+    </div>
+
+</body>
+</html>
