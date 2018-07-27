@@ -45,8 +45,12 @@ function sendDataUser() {
 
 buttonMessageFooter.addEventListener("click", sendDataUser);
 
-textMessageFooter.addEventListener("keyup", function() {
-    socket.emit("typing", {nick: nameUser.nickname, lengthMes: textMessageFooter.value.length});
+textMessageFooter.addEventListener("keyup", function(e) {
+    socket.emit("typing", {nick: nameUser.nickname, lengthMes: textMessageFooter.value.length, focus:true});
+});
+
+textMessageFooter.addEventListener("blur", function(e) {
+    socket.emit("typing", {nick: nameUser.nickname, lengthMes: textMessageFooter.value.length, focus: false});
 });
 
 textMessageFooter.addEventListener("keypress", function(e) {
