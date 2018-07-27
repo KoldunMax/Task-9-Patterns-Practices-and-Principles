@@ -3,7 +3,58 @@ var http = require("http").Server(app);
 var io = require("socket.io")(http);
 
 var messages = [];
-var users = [];
+var users = []; 
+
+// Нижче реалізується патерн Factory
+
+class Quotes {            
+    constructor() {
+        this.tips = [
+            'Java относится к JavaScript так же, как Сом к Сомали.',
+            'Это не баг — это незадокументированная фича.',
+            'Плохое ПО одного человека — постоянная работа другого.',
+            'Если сразу не получилось хорошо, назовите это версией 1.0.',
+            'Не волнуйся, если не работает. Если бы все всегда работало, у тебя бы не было работы.'
+        ];
+    }
+}
+
+class Advises {
+    constructor() {
+        this.tips = [
+            'Той, хто сміється останнім, можливо не зрозумів жарту.',
+            'Як багато можна цікавого почути, якщо частіше мовчати.',
+            'Посмішка має ефект дзеркала - посміхнися і ти побачиш посмішку...',
+            'Рухайся не поспішаючи, але завжди тільки вперед.',
+            'Старайся! І у тебе все обов\'язково вийде.'
+        ]
+    }
+}
+
+class getTip {
+    create (type) {
+      let tip;
+      if (type === 'show quote') {
+        tip = new Quotes()
+      } else if (type === '#@)₴?$0') {
+        tip = new Advises()
+      } 
+
+      tip.type = type
+      tip.getMessage = function () {
+
+            const minCountOfTips = 0;
+            const maxCountOfTips = this.tips.length - 1;
+            const getRoundomNumberOfTip = Math.floor(Math.random() * (maxCountOfTips - minCountOfTips + 1)) + minCountOfTips;
+            const getStringOfTipByNumber = this.tips[getRoundomNumberOfTip];
+
+            return getStringOfTipByNumber;
+      }
+      return tip;
+    }
+  }
+
+// Кінець реалізації патерна Factory
 
 app.get("/", function(req, res) {
     res.sendFile(__dirname + "/index.html");
@@ -102,6 +153,58 @@ io.on("connection", function(socket) {
         } else {
             messages.push(msg);
             io.emit("chat message", msg);
+            socket.emit("chat history current user", {msg: messages, nick: msg.nickname});
+        }
+    });
+
+    function returnSpecialSymbols(message) {
+
+        const result = message.filter(item => item == '#@)₴?$0');
+        
+        if(result.length) {    // Якщо є співпадіння з #@)₴?$0 то довжина буде більше нуля
+            return result
+        } else {
+            return message
+        }
+
+    }
+
+    function getRequestToBot(message, checkSpecialSymbols) {   
+        
+        const splitMessageToArray = message.split(' ');
+
+        const cutNameBot = splitMessageToArray.filter(item => item != '@bot');
+
+        const checkingBySymbols = checkSpecialSymbols.call(null, cutNameBot);
+
+        const stringBodyMessage = checkingBySymbols.join(' ');
+
+        return stringBodyMessage;
+
+    }
+
+    socket.on("chat message bot", function(msg) {
+        if(messages.length == 100) {
+            messages.splice(0, 1);
+        }
+        if(msg.text.length == 0) {
+            socket.emit("incorrect fields", "Your message is empty");
+        } else {
+            const tip = new getTip();
+            createTipDependsToRequest = tip.create(getRequestToBot(msg.text, returnSpecialSymbols)) 
+            console.log(createTipDependsToRequest.getMessage());
+
+            const answerBot = {
+                name: '@bot',
+                nickname: 'bot',
+                text: createTipDependsToRequest.getMessage(),
+                time: new Date()
+            }
+
+            messages.push(msg);
+            io.emit("chat message", msg);
+            messages.push(answerBot);
+            io.emit("chat message", answerBot);
             socket.emit("chat history current user", {msg: messages, nick: msg.nickname});
         }
     });
