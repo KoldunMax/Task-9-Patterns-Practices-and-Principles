@@ -4,6 +4,136 @@ var io = require("socket.io")(http);
 
 var messages = [];
 var users = []; 
+var notes = [ { titleMes: `"Pattern 'Proxy'"`, bodyNote: `"JavaScript has new feature Proxy since ES2015"` }];
+
+
+// Патерн Facade 
+
+    class saveNoteTitle {
+
+        checkTitleSaving(message) {                             
+            const splitMessageToArray = message.split(`\"`);
+            return splitMessageToArray[0].trim() == "Save note title:";
+        }
+
+        add(message) {
+            const re = /"(\\.|[^"\\])*"/g;
+            const getArrayOfNoteData = message.match(re);
+            let checkTitleOfNote = true;
+            
+            if(notes.length) {
+                checkTitleOfNote = notes.every(function(item) {
+                    return item.titleMes.trim() != getArrayOfNoteData[0].trim()
+                }) 
+            }
+
+            if(getArrayOfNoteData.length == 2 && checkTitleOfNote){
+                
+                let title = getArrayOfNoteData[0];
+                let bodyNote = getArrayOfNoteData[1];
+
+                notes.push({titleMes: title, bodyNote: bodyNote});
+                return `Запис ${title} було додано`
+
+            } else {
+                return false
+            }
+        }
+
+    }
+
+    class showNoteList {
+        checkNotesShowing(message) {
+            return message == "Show note list" ? true : false;
+        }
+        show() {
+
+            if(notes.length) {
+                let result = notes.reduce(function(fullMes, current) {
+                    return fullMes + ' ' + current.titleMes + ' ' + current.bodyNote + '\n';
+                }, "")
+                return result;
+            } else {
+                return false
+            }
+
+        }
+    }
+
+    // @bot Save note title: "Pattern 'Proxy'" body: "JavaScript has new feature Proxy since ES2015"
+    // @bot Show note "Pattern 'Proxy'"
+
+    class showNoteTitle {
+
+        checkNotesByTitle(message) {
+            const splitMessageToArray = message.split('\"');
+            return splitMessageToArray[0].trim() == "Show note";
+        }
+
+        showByTitle(message) {
+
+            const re = /"(\\.|[^"\\])*"/g;
+            const getArrayOfNoteData = message.match(re);
+            if(getArrayOfNoteData.length == 1) {
+                const title = getArrayOfNoteData[0];
+                const foundNote = notes.filter(item => item.titleMes == title);
+                return foundNote.length ? ` It is a title: ${foundNote[0].titleMes} and a body: ${foundNote[0].bodyNote}` : false;
+            } else {
+                return false
+            }
+        }
+    }
+
+    class deleteNote {
+
+        checkNoteBeforeDelete(message) {
+            const splitMessageToArray = message.split('\"');
+            return splitMessageToArray[0].trim() == "Delete note";
+        } 
+
+        deleteNoteByTitle(message) {
+            const re = /"(\\.|[^"\\])*"/g;
+            const getArrayOfNoteData = message.match(re);
+            console.log(getArrayOfNoteData.length);
+            if(getArrayOfNoteData.length == 1) {
+                const title = getArrayOfNoteData[0];
+                console.log(notes.filter(item => item.titleMes != title));
+                notes = notes.filter(item => item.titleMes != title);
+                return `Note with ${title} was deleted`
+            } else {
+                return false
+            }
+        }
+    }
+
+    class ManagingNote {
+        constructor(customerName) {
+            this.customerName = customerName;
+        }
+
+        handleNote(message) {
+
+            const isSaveNoteTitle = new saveNoteTitle().checkTitleSaving(message);
+            console.log(isSaveNoteTitle);
+            const saveMessage = isSaveNoteTitle ? new saveNoteTitle().add(message) : false;
+
+            const isShowNoteList = new showNoteList().checkNotesShowing(message);
+            const showListOfNote = isShowNoteList ? new showNoteList().show() : false;
+
+            const isShowNotesByTitle = new showNoteTitle().checkNotesByTitle(message);
+            const showNoteByTitle = isShowNotesByTitle ? new showNoteTitle().showByTitle(message) : false;
+
+            const isDeletedFileExist = new deleteNote().checkNoteBeforeDelete(message);
+            const deleteFileByTitle = isDeletedFileExist ? new deleteNote().deleteNoteByTitle(message) : false;
+
+            let getAnswer = saveMessage || showListOfNote || showNoteByTitle || deleteFileByTitle; // Тут, якщо якийсь запит пройшов усішнно, то я його поверну
+            
+        return !!getAnswer ? this.customerName + ' ' + getAnswer : getAnswer;                                                                     // Якщо такого запиту не буде я поверну false, що значить не знайдено
+        }
+    }
+
+// Кінець реалізації патерна Facade
+
 
 // Нижче реалізується патерн Factory
 
@@ -40,17 +170,24 @@ class getTip {
         tip = new Advises()
       } 
 
-      tip.type = type
-      tip.getMessage = function () {
+      if(tip != undefined) {
+        
+        tip.type = type
 
-            const minCountOfTips = 0;
-            const maxCountOfTips = this.tips.length - 1;
-            const getRoundomNumberOfTip = Math.floor(Math.random() * (maxCountOfTips - minCountOfTips + 1)) + minCountOfTips;
-            const getStringOfTipByNumber = this.tips[getRoundomNumberOfTip];
+        tip.getMessage = function () {
+  
+              const minCountOfTips = 0;
+              const maxCountOfTips = this.tips.length - 1;
+              const getRoundomNumberOfTip = Math.floor(Math.random() * (maxCountOfTips - minCountOfTips + 1)) + minCountOfTips;
+              const getStringOfTipByNumber = this.tips[getRoundomNumberOfTip];
+  
+              return getStringOfTipByNumber;
+        }
 
-            return getStringOfTipByNumber;
+        return tip;
+      } else {
+        return false
       }
-      return tip;
     }
   }
 
@@ -190,14 +327,33 @@ io.on("connection", function(socket) {
         if(msg.text.length == 0) {
             socket.emit("incorrect fields", "Your message is empty");
         } else {
-            const tip = new getTip();
-            createTipDependsToRequest = tip.create(getRequestToBot(msg.text, returnSpecialSymbols)) 
-            console.log(createTipDependsToRequest.getMessage());
+            
+            bodyMessageFromBot = getRequestToBot(msg.text, returnSpecialSymbols)
 
+            let messageOfBotAnswer = '';
+
+            const note = new ManagingNote(msg.nickname);
+
+            const changeNotesDependsToRequest = note.handleNote(bodyMessageFromBot);
+
+            messageOfBotAnswer = changeNotesDependsToRequest ? changeNotesDependsToRequest : false;
+
+            if(!!messageOfBotAnswer == false) {
+                const tip = new getTip();
+            
+                createTipDependsToRequest = tip.create(bodyMessageFromBot);
+                
+                messageOfBotAnswer = createTipDependsToRequest ? createTipDependsToRequest.getMessage() : false;
+            }
+            
+            if(messageOfBotAnswer == false) {
+                messageOfBotAnswer = 'Помилка вводу';
+            }
+            
             const answerBot = {
                 name: '@bot',
                 nickname: 'bot',
-                text: createTipDependsToRequest.getMessage(),
+                text: messageOfBotAnswer,
                 time: new Date()
             }
 

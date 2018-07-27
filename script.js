@@ -14,61 +14,6 @@ var contentMessage = mainWrapperMessages.getElementsByClassName("message-content
 var headerNameUser;
 var feedback = document.getElementById("feedback");
 
-class FullTime {
-    constructor () {
-      this.rate = '$12'
-    }
-  }
-  
-  class PartTime {
-    constructor () {
-      this.rate = '$11'
-    }
-  }
-  
-  class Temporary {
-    constructor () {
-      this.rate = '$10'
-    }
-  }
-  
-  class Contractor {
-    constructor () {
-      this.rate = '$15'
-    }
-  }
-
-  class Employee {
-    create (type) {
-      let employee;
-      if (type === 'fulltime') {
-        employee = new FullTime()
-      } else if (type === 'parttime') {
-        employee = new PartTime()
-      } else if (type === 'temporary') {
-        employee = new Temporary()
-      } else if (type === 'contractor') {
-        employee = new Contractor()
-      }
-      employee.type = type
-      employee.say = function () {
-        console.log(`${this.type}: rate ${this.rate}/hour`)
-      }
-      return employee
-    }
-  }
-
-const factory = new Employee()
-fulltime = factory.create('fulltime')
-parttime = factory.create('parttime')
-temporary = factory.create('temporary')
-contractor = factory.create('contractor')
-
-fulltime.say()
-parttime.say()
-temporary.say()
-contractor.say()
-
 function checkHandlingBot(message) {
     const transformMessageToArray = message.split(' ');
     return function (nameOfBot) {
@@ -80,6 +25,7 @@ var nameUser = {
     name: "User Name",
     nickname: "User Nick"
 }
+
 var socket = io.connect();
 
 inviteButton.addEventListener("click", function() {
@@ -94,16 +40,13 @@ inviteButton.addEventListener("click", function() {
 });
 
 function sendDataUser() {
+
     var data = {
         name: nameUser.name,
         nickname: nameUser.nickname,
         text: textMessageFooter.value,
         time: new Date()
     }
-    console.log(data.text.split(' '));
-
-    console.log(checkHandlingBot(data.text)('@bot'));
-    console.log(checkHandlingBot(data.text)(' @bot'));
 
     textMessageFooter.value = "";
     feedback.innerHTML = "";
