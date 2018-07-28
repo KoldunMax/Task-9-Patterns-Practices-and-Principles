@@ -6,6 +6,20 @@ var messages = [];
 var users = []; 
 var notes = [ { titleMes: `"Pattern 'Proxy'"`, bodyNote: `"JavaScript has new feature Proxy since ES2015"` }];
 
+var currencyList = {
+                    dollar: {
+                        euro:  0.8535,
+                        hryvnia: 26.6514
+                    },
+                    euro: {
+                        dollar: 1.1716,
+                        hryvnia: 31.2248
+                    },
+                    hryvnia: {
+                        dollar: 0.0375,
+                        euro: 0.032
+                    }
+                }
 
 // Патерн Facade 
 
@@ -59,9 +73,6 @@ var notes = [ { titleMes: `"Pattern 'Proxy'"`, bodyNote: `"JavaScript has new fe
 
         }
     }
-
-    // @bot Save note title: "Pattern 'Proxy'" body: "JavaScript has new feature Proxy since ES2015"
-    // @bot Show note "Pattern 'Proxy'"
 
     class showNoteTitle {
 
@@ -193,6 +204,84 @@ class getTip {
 
 // Кінець реалізації патерна Factory
 
+// Нижче реалізується патерн Factory для Валюти трохи модернізований
+
+    class Euro {            
+        constructor(count, currency, convertCurrency) {
+            this.count = count;
+            this.currency = currency;
+            this.convertCurrency = convertCurrency;
+        }
+    }
+
+    class Dollar {
+        constructor(count, currency, convertCurrency) {
+            this.count = count;
+            this.currency = currency;
+            this.convertCurrency = convertCurrency;
+        }
+    }
+
+    class Hryvnia {
+        constructor(count, currency, convertCurrency) {
+            this.count = count;
+            this.currency = currency;
+            this.convertCurrency = convertCurrency;
+        }
+    }
+
+    class ConvertedCurrency {
+        create (requestToConverting) {
+
+          const countCurrency = requestToConverting[0];
+          const currentCurrenct = requestToConverting[1];
+          const currencyToConverting = requestToConverting[2];
+          
+          let chooseTypeCurrency;
+
+          if (currentCurrenct === 'euro') {
+            chooseTypeCurrency = new Euro(Number(countCurrency), currentCurrenct, currencyToConverting);
+          } else if (currentCurrenct === 'dollar') {
+            chooseTypeCurrency = new Dollar(Number(countCurrency), currentCurrenct, currencyToConverting);   
+          } else if (currentCurrenct === 'hryvnia') {
+            chooseTypeCurrency = new Hryvnia(Number(countCurrency), currentCurrenct, currencyToConverting);
+          }
+    
+          if(chooseTypeCurrency != undefined) {
+            
+            chooseTypeCurrency.type = currentCurrenct
+    
+            chooseTypeCurrency.getConvertedMessage = function () {
+                  const costConvertedCurrenct =  currencyList[this.currency][this.convertCurrency] * this.count
+                
+                  return `${this.count} ${this.currency} = ${costConvertedCurrenct} ${this.convertCurrency}`;
+            }
+    
+            return chooseTypeCurrency;
+          } else {
+            return false
+          }
+        }
+      }
+//
+
+//  Proxy(ES2015) Практичне застосування, окрім додавання даних до оригінального масиву через проміжний об'єкт я не встиг знайти :(
+                 // Але теоретично розумію, що можна перехопити message при зміні оригіналу можливо.
+    
+    var arrayChangeHandler = {
+            get: function(target, property) {
+            return target[property];
+        },
+            set: function(target, property, value, receiver) {
+            target[property] = value;
+            return true;
+        }
+    };
+
+    var proxyMessages = new Proxy( messages, arrayChangeHandler );
+
+// --------------------------------------------------------------------------------
+
 app.get("/", function(req, res) {
     res.sendFile(__dirname + "/index.html");
 });
@@ -271,7 +360,6 @@ io.on("connection", function(socket) {
                 newUser.id = socket.id;
                 users.push(newUser);
                 io.emit("chat user", newUser);
-              //  io.emit("change position message", newUser);
                 socket.emit("chat history current user", {msg: messages, nick: newUser.nickname});
                 socket.emit("chat user invite");
                 socket.emit("adding user",  users);
@@ -320,6 +408,24 @@ io.on("connection", function(socket) {
 
     }
 
+    function splitCountandCurrency(request) {
+
+        const splitRequestToMassive = request.split(' ');
+
+        let getCount = splitRequestToMassive.filter(function(item) {
+            return Number(item);
+        })
+
+        let getCurrencies = splitRequestToMassive.filter(function(item) {
+            return item == "euro" || item ==  'dollar' || item ==  "hryvnia";
+        })
+    
+        const getFullRequest = getCount.concat(getCurrencies);
+
+        return getFullRequest.length == 3 ? getFullRequest : false;
+
+    }
+
     socket.on("chat message bot", function(msg) {
         if(messages.length == 100) {
             messages.splice(0, 1);
@@ -332,12 +438,20 @@ io.on("connection", function(socket) {
 
             let messageOfBotAnswer = '';
 
-            const note = new ManagingNote(msg.nickname);
+            if(splitCountandCurrency(bodyMessageFromBot) && !!messageOfBotAnswer == false) {
+                const resultConverting = new ConvertedCurrency();
 
-            const changeNotesDependsToRequest = note.handleNote(bodyMessageFromBot);
+                createCovertDependsToCurrency = resultConverting.create(splitCountandCurrency(bodyMessageFromBot));
+                console.log(createCovertDependsToCurrency.getConvertedMessage());
+                messageOfBotAnswer = createCovertDependsToCurrency ? createCovertDependsToCurrency.getConvertedMessage() : false;
+            }
+            if(!!messageOfBotAnswer == false) {
+                const note = new ManagingNote(msg.nickname);
 
-            messageOfBotAnswer = changeNotesDependsToRequest ? changeNotesDependsToRequest : false;
+                const changeNotesDependsToRequest = note.handleNote(bodyMessageFromBot);
 
+                messageOfBotAnswer = changeNotesDependsToRequest ? changeNotesDependsToRequest : false;
+            }
             if(!!messageOfBotAnswer == false) {
                 const tip = new getTip();
             
@@ -347,7 +461,7 @@ io.on("connection", function(socket) {
             }
             
             if(messageOfBotAnswer == false) {
-                messageOfBotAnswer = 'Помилка вводу';
+                messageOfBotAnswer = 'Гей друже, я гадаю ти помилився запитом';      
             }
             
             const answerBot = {
@@ -357,9 +471,9 @@ io.on("connection", function(socket) {
                 time: new Date()
             }
 
-            messages.push(msg);
+            proxyMessages.push(msg);
             io.emit("chat message", msg);
-            messages.push(answerBot);
+            proxyMessages.push(answerBot);
             io.emit("chat message", answerBot);
             socket.emit("chat history current user", {msg: messages, nick: msg.nickname});
         }
