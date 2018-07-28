@@ -137,10 +137,8 @@ var weatherList = {
         deleteNoteByTitle(message) {
             const re = /"(\\.|[^"\\])*"/g;
             const getArrayOfNoteData = message.match(re);
-            console.log(getArrayOfNoteData.length);
             if(getArrayOfNoteData.length == 1) {
                 const title = getArrayOfNoteData[0];
-                console.log(notes.filter(item => item.titleMes != title));
                 notes = notes.filter(item => item.titleMes != title);
                 return `Note with ${title} was deleted`
             } else {
@@ -327,6 +325,8 @@ app.get("/style.css", function(req, res) {
 
 io.on("connection", function(socket) {
 
+    console.log("client connected");
+
     function changeStatusOnline(user) {
         if(user.status == "just appeared") {
             user.status = "online";
@@ -360,7 +360,6 @@ io.on("connection", function(socket) {
                 if(users[i].nickname == newUser.nickname) {
                     if(users[i].name == newUser.name) {
                         if(users[i].status != "online" && users[i].status != "just appeared") {
-                            console.log(users[i].status);
                             setTimeout(changeStatusOnline, 60000, users[i]);
                             users[i].dataInv = new Date();
                             users[i].status = "just appeared";
