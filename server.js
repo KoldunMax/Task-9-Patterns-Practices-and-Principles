@@ -157,7 +157,6 @@ var weatherList = {
         handleNote(message) {
 
             const isSaveNoteTitle = new saveNoteTitle().checkTitleSaving(message);
-            console.log(isSaveNoteTitle);
             const saveMessage = isSaveNoteTitle ? new saveNoteTitle().add(message) : false;
 
             const isShowNoteList = new showNoteList().checkNotesShowing(message);
