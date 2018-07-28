@@ -1,14 +1,14 @@
 # Task-9-Patterns-Practices-and-Principles
 Here task where i had to modify my 7 task with a chat
 
-### Привіт, це нова версія мого чат, де я створив примітивног, як двері бота
+### Привіт, це нова версія мого чату, де я створив примітивного, як двері бота
 
 #### Щоб користуватися цим ботом, потрібно дотримуватися простих шаблонів, ось декілька прикладів
 
 ##### Спитатися погоду, може сказати будь який день неділі, або ж можеш написати today чи tommorow
 
 Приклад:
-What is the weather on <Day> in <City> -> What is the weather on Monday in Kyiv
+What is the weather on "Day" in "City" -> What is the weather on Monday in Kyiv
 p.s. Може шукати у містах Kyiv, Kharkiv, Odessa, Dnipro, Varash
 
 Його відповідь має бути такою
@@ -17,7 +17,7 @@ The weather is Good in Kyiv on Monday, temperature 24 *C
 #### Перевести ваші долари чи євро у гривні або навпаки
 
 Приклад:
-@bot Convert <Count><Space><Currency> to <CurrencyConvert> -> @bot Convert 20 dollar to euro
+@bot Convert 'Count' 'Space' 'Currency' to 'CurrencyConvert' -> @bot Convert 20 dollar to euro
 
 Відповідь отримаєте 
 20 dollar = 17.07 euro
