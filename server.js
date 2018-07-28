@@ -5,7 +5,6 @@ var io = require("socket.io")(http);
 var messages = [];
 var users = []; 
 var notes = [ { titleMes: `"Pattern 'Proxy'"`, bodyNote: `"JavaScript has new feature Proxy since ES2015"` }];
-
 var currencyList = {
                     dollar: {
                         euro:  0.8535,
@@ -20,6 +19,39 @@ var currencyList = {
                         euro: 0.032
                     }
                 }
+
+var weatherList = {
+    Lviv: {
+        temperature: 22,
+        UnitsM: '*C',
+        description: this.temperatue < 12 ? "Cold" : "Good" 
+    },
+    Kyiv: {
+        temperature: 24,
+        UnitsM: '*C',
+        description: this.temperatue < 12 ? "Cold" : "Good" 
+    },
+    Kharkiv: {
+        temperature: 11,
+        UnitsM: '*C',
+        description: this.temperatue < 12 ? "Cold" : "Good" 
+    },
+    Odessa: {
+        temperature: 16,
+        UnitsM: '*C',
+        description: this.temperatue < 12 ? "Cold" : "Good" 
+    },
+    Dnipro: {
+        temperature: 18,
+        UnitsM: '*C',
+        description: this.temperatue < 12 ? "Cold" : "Good" 
+    },
+    Varash: {                                               // Я типу тут живу :-)
+        temperature: 19,
+        UnitsM: '*C',
+        description: this.temperatue < 12 ? "Cold" : "Good" 
+    }
+}
 
 // Патерн Facade 
 
@@ -296,8 +328,6 @@ app.get("/style.css", function(req, res) {
 
 io.on("connection", function(socket) {
 
-    console.log("client connected");
-
     function changeStatusOnline(user) {
         if(user.status == "just appeared") {
             user.status = "online";
@@ -426,6 +456,53 @@ io.on("connection", function(socket) {
 
     }
 
+    function getDayandCity(request) {
+
+        const splitRequest= request.split(' ');
+        let getDay = splitRequest.filter(function(item) {
+            return item == "Monday" ||
+                item == "Tuesday" ||
+                item == "Wednesday" ||
+                item == "Thursday" || 
+                item == "Friday" || 
+                item == "Saturday" ||
+                item == "Sunday" || 
+                item == "today" ||
+                item == "tommorow"
+        });
+
+        let getCity = splitRequest.filter(function(item) { 
+            return item == "Lviv" ||
+                item == "Kyiv" ||
+                item == "Kharkiv" ||
+                item == "Odessa" || 
+                item == "Dnipro" || 
+                item == "Varash"
+        });
+        
+        const getFullRequest = getDay.concat(getCity);
+
+        return getFullRequest.length == 2 ? getFullRequest : false;
+
+    } 
+
+    function converterToDayOfWeek(day) {
+        var d = day == 'today' ? new Date() : new Date(new Date().getTime() + 24 * 60 * 60 * 1000);
+
+        var days = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+
+        return days[d.getDay()];
+    }
+
+    function showWeatherInCity(dayAndCity, converterToDayOfWeek) {
+        let dayOfWeek = dayAndCity[0];
+        let city = dayAndCity[1];
+        if(dayOfWeek == 'today' || dayOfWeek == 'tommorow') {
+            dayOfWeek = converterToDayOfWeek.call(null, dayOfWeek);
+        }
+        return `The weather is ${weatherList[city].description} in ${city} on ${dayOfWeek}, temperature ${weatherList[city].temperature} ${weatherList[city].UnitsM}`;
+    }
+
     socket.on("chat message bot", function(msg) {
         if(messages.length == 100) {
             messages.splice(0, 1);
@@ -438,13 +515,18 @@ io.on("connection", function(socket) {
 
             let messageOfBotAnswer = '';
 
-            if(splitCountandCurrency(bodyMessageFromBot) && !!messageOfBotAnswer == false) {
-                const resultConverting = new ConvertedCurrency();
-
-                createCovertDependsToCurrency = resultConverting.create(splitCountandCurrency(bodyMessageFromBot));
-                console.log(createCovertDependsToCurrency.getConvertedMessage());
-                messageOfBotAnswer = createCovertDependsToCurrency ? createCovertDependsToCurrency.getConvertedMessage() : false;
+            if(getDayandCity(bodyMessageFromBot) && !!messageOfBotAnswer == false) {    // Кожного разу я перевіряю, чи взагалі стоїть перевіряти запит до бота, якщо відповідь вже є від нього то ні, або якщо параметри не підодять
+                messageOfBotAnswer = showWeatherInCity(getDayandCity(bodyMessageFromBot), converterToDayOfWeek);
             }
+
+            if(splitCountandCurrency(bodyMessageFromBot) && !!messageOfBotAnswer == false) {
+
+                const resultConverting = new ConvertedCurrency();
+                createCovertDependsToCurrency = resultConverting.create(splitCountandCurrency(bodyMessageFromBot));
+                messageOfBotAnswer = createCovertDependsToCurrency ? createCovertDependsToCurrency.getConvertedMessage() : false;
+            
+            }
+
             if(!!messageOfBotAnswer == false) {
                 const note = new ManagingNote(msg.nickname);
 
@@ -452,6 +534,7 @@ io.on("connection", function(socket) {
 
                 messageOfBotAnswer = changeNotesDependsToRequest ? changeNotesDependsToRequest : false;
             }
+
             if(!!messageOfBotAnswer == false) {
                 const tip = new getTip();
             
